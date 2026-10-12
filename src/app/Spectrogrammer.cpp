@@ -246,7 +246,7 @@ bool Spectrogrammer_MainLoopStep()
     ImGui::Begin("imgui window", NULL, window_flags); // create a window
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
 
-    ImGui::Checkbox("Play", &play);
+    ImGui::Checkbox("播放", &play);
     static bool play_was = true;
     if (play != play_was)
     {
@@ -261,9 +261,9 @@ bool Spectrogrammer_MainLoopStep()
 
     bool bScaleChanged = false;
 
-    if (ImGui::Button("Hold"))
+    if (ImGui::Button("保持"))
     {
-        ImGui::OpenPopup("Hold Menu");
+        ImGui::OpenPopup("保持菜单");
         
         RefreshFiles(pWorkingDirectory);
     }
@@ -271,7 +271,7 @@ bool Spectrogrammer_MainLoopStep()
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, -1));
-    if (ImGui::BeginPopupModal("Hold Menu", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("保持菜单", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         bool bHoldInProgress = (holding_state == HOLDING_STATE_STARTED);
         if (bHoldInProgress) 
@@ -285,14 +285,14 @@ bool Spectrogrammer_MainLoopStep()
             holding_state = HOLDING_STATE_READY;
         }
 
-        if (ImGui::Button("Capture"))
+        if (ImGui::Button("捕获"))
         {
             SetColorMap(1);
             holding_state = HOLDING_STATE_STARTED;
         }   
 
         ImGui::SameLine();
-        if (ImGui::Button("Clear"))
+        if (ImGui::Button("清除"))
         {
             SetColorMap(0);
             holding_state = HOLDING_STATE_NO_HOLD;
@@ -302,45 +302,45 @@ bool Spectrogrammer_MainLoopStep()
             ImGui::EndDisabled();
 
         ImGui::Separator();
-        if (ImGui::Button("Close"))
+        if (ImGui::Button("关闭"))
             ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Axis"))
-        ImGui::OpenPopup("Axis Settings");
+    if (ImGui::Button("坐标轴"))
+        ImGui::OpenPopup("坐标轴设置");
 
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
     //ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x*.8, -1));
-    if (ImGui::BeginPopupModal("Axis Settings", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("坐标轴设置", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        bScaleXChanged |= ImGui::Checkbox("Log x", &logX);
+        bScaleXChanged |= ImGui::Checkbox("X轴对数", &logX);
         bScaleChanged |= bScaleXChanged;
         ImGui::SameLine();
-        bScaleChanged |= ImGui::Checkbox("Log y", &logY);
+        bScaleChanged |= ImGui::Checkbox("Y轴对数", &logY);
 
-        ImGui::Text("Y axis");
-        bScaleChanged |= ImGui::SliderFloat("dB max", &axis_y_max, -130.0f, 0.0f);
-        bScaleChanged |= ImGui::SliderFloat("dB min", &axis_y_min, -130.0f, 0.0f);
+        ImGui::Text("Y 轴（分贝）");
+        bScaleChanged |= ImGui::SliderFloat("dB 最大", &axis_y_max, -130.0f, 0.0f);
+        bScaleChanged |= ImGui::SliderFloat("dB 最小", &axis_y_min, -130.0f, 0.0f);
 
-        ImGui::Text("X axis");
-        bScaleXChanged |= ImGui::SliderFloat("freq max", &axis_freq_max, min_freq, max_freq);
-        bScaleXChanged |= ImGui::SliderFloat("freq min", &axis_freq_min, min_freq, max_freq);
+        ImGui::Text("X 轴（频率）");
+        bScaleXChanged |= ImGui::SliderFloat("频率最大", &axis_freq_max, min_freq, max_freq);
+        bScaleXChanged |= ImGui::SliderFloat("频率最小", &axis_freq_min, min_freq, max_freq);
 
         bScaleChanged |= bScaleXChanged;
 
-        ImGui::Text("Time axis");
+        ImGui::Text("时间轴");
         //ImGui::SliderFloat("overlap", &fraction_overlap, 0.0f, 0.99f);
-        bScaleChanged |= ImGui::SliderFloat("decay", &decay, 0.0f, 0.99f);
-        if (ImGui::SliderInt("averaging", &averaging, 1,500))
+        bScaleChanged |= ImGui::SliderFloat("衰减", &decay, 0.0f, 0.99f);
+        if (ImGui::SliderInt("平均次数", &averaging, 1,500))
         {
             bufferAverage.setAverageCount(averaging);
             bScaleChanged = true;
         }
         
         ImGui::Spacing();
-        if (ImGui::Button("Close"))
+        if (ImGui::Button("关闭"))
             ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
     }

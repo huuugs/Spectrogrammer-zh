@@ -16,6 +16,7 @@
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
 #include <string>
+#include <cstdio>
 #include "Spectrogrammer.h"
 #include "audio/audio_main.h"
 
@@ -217,9 +218,37 @@ void Init(struct android_app* app)
 
     int density = AConfiguration_getDensity(app->config);
     float ui_scale = density > 0 ? (float)density / 160.0f : 1.0f;
-    ImFontConfig font_cfg;
-    font_cfg.SizePixels = 18.0f * ui_scale;
-    io.Fonts->AddFontDefault(&font_cfg);
+    float font_size = 18.0f * ui_scale;
+
+    // 汉化: 尝试加载支持中文的系统字体，失败则回退到 ImGui 内置字体
+    // (ImGui 默认字体只含 ASCII 字符，中文会显示为问号)
+    bool font_loaded = false;
+    const char* cjk_font_paths[] =
+    {
+        "/system/fonts/DroidSansFallback.ttf",
+        "/system/fonts/NotoSansCJK-Regular.ttc",
+        "/system/fonts/NotoSerifCJK-Regular.ttc",
+        "/system/fonts/NotoSansSC-Regular.otf",
+    };
+    const ImWchar* cjk_glyph_ranges = io.Fonts->GetGlyphRangesChineseSimplifiedCommon();
+    for (const char* path : cjk_font_paths)
+    {
+        FILE* f = fopen(path, "rb");
+        if (f == NULL)
+            continue;
+        fclose(f);
+        if (io.Fonts->AddFontFromFileTTF(path, font_size, NULL, cjk_glyph_ranges) != NULL)
+        {
+            font_loaded = true;
+            break;
+        }
+    }
+    if (!font_loaded)
+    {
+        ImFontConfig font_cfg;
+        font_cfg.SizePixels = font_size;
+        io.Fonts->AddFontDefault(&font_cfg);
+    }
     ImGui::GetStyle().ScaleAllSizes(ui_scale);
 
     if (!g_AppInitialized)

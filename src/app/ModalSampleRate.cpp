@@ -5,11 +5,11 @@
 
 bool ModalSampleRateAndFFT(float *sample_rate, uint32_t *fft_size)
 {
-    if (ImGui::Button("Audio"))
-        ImGui::OpenPopup("Audio settings");
+    if (ImGui::Button("音频"))
+        ImGui::OpenPopup("音频设置");
 
     bool res = false;
-    if (ImGui::BeginPopupModal("Audio settings", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("音频设置", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::Spacing();
 
@@ -27,7 +27,7 @@ bool ModalSampleRateAndFFT(float *sample_rate, uint32_t *fft_size)
                 }
             }
 
-            if (ImGui::BeginCombo("Sample rate", current_item)) // The second parameter is the label previewed before opening the combo.
+            if (ImGui::BeginCombo("采样率", current_item)) // The second parameter is the label previewed before opening the combo.
             {
                 for (int n = 0; n < IM_ARRAYSIZE(items_str); n++)
                 {
@@ -60,7 +60,7 @@ bool ModalSampleRateAndFFT(float *sample_rate, uint32_t *fft_size)
                 }
             }
 
-            if (ImGui::BeginCombo("FFT size", current_item)) // The second parameter is the label previewed before opening the combo.
+            if (ImGui::BeginCombo("FFT 点数", current_item)) // The second parameter is the label previewed before opening the combo.
             {
                 for (int n = 0; n < IM_ARRAYSIZE(items_str); n++)
                 {
@@ -80,10 +80,10 @@ bool ModalSampleRateAndFFT(float *sample_rate, uint32_t *fft_size)
 
         ImGui::Spacing();
 
-        ImGui::Text("Freq resolution: %f", *sample_rate /(float)*fft_size );
+        ImGui::Text("频率分辨率：%f", *sample_rate /(float)*fft_size );
 
         ImGui::Spacing();
-        if (ImGui::Button("Close"))
+        if (ImGui::Button("关闭"))
             ImGui::CloseCurrentPopup();
         ImGui::EndPopup();        
     }

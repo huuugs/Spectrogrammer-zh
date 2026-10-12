@@ -58,7 +58,7 @@ bool HoldPicker(const char *pWorkingDirectory, bool bCanSave, BufferIODouble *pB
     if (bDisableSave) 
         ImGui::BeginDisabled();
 
-    if ( ImGui::Button("Save"))
+    if ( ImGui::Button("保存"))
     {
         time_t timer;
         struct tm* tm_info;
@@ -87,20 +87,20 @@ bool HoldPicker(const char *pWorkingDirectory, bool bCanSave, BufferIODouble *pB
 
     ImGui::SameLine();
     static char newFilename[1024];
-    if (ImGui::Button("Rename"))
+    if (ImGui::Button("重命名"))
     {
-        ImGui::OpenPopup("Rename");
+        ImGui::OpenPopup("重命名");
         strcpy(newFilename, pSelectedFilename);
     }
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-    if (ImGui::BeginPopupModal("Rename", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("重命名", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("NewName");
+        ImGui::Text("新名称");
         ImGui::InputText("###Name", newFilename, 1024, ImGuiInputTextFlags_EnterReturnsTrue);
         ImGui::Separator();
-        if (ImGui::Button("OK", ImVec2(120, 0))) 
+        if (ImGui::Button("确定", ImVec2(120, 0))) 
         { 
             std::string oldPath = std::string(pWorkingDirectory) + "/" + pSelectedFilename;
             std::string newPath = std::string(pWorkingDirectory) + "/" + newFilename;
@@ -110,23 +110,23 @@ bool HoldPicker(const char *pWorkingDirectory, bool bCanSave, BufferIODouble *pB
         }
         ImGui::SetItemDefaultFocus();
         ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+        if (ImGui::Button("取消", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
         ImGui::EndPopup();
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Delete"))
+    if (ImGui::Button("删除"))
     {
-        ImGui::OpenPopup("Delete?");
+        ImGui::OpenPopup("删除？");
     }
 
     center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-    if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("删除？", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("Are you sure?");
+        ImGui::Text("确定要删除吗？");
         ImGui::Separator();
-        if (ImGui::Button("OK", ImVec2(120, 0))) 
+        if (ImGui::Button("确定", ImVec2(120, 0))) 
         { 
             char filename[1024];
             snprintf(filename, sizeof(filename), "%s/%s", pWorkingDirectory, pSelectedFilename);
@@ -138,7 +138,7 @@ bool HoldPicker(const char *pWorkingDirectory, bool bCanSave, BufferIODouble *pB
         }
         ImGui::SetItemDefaultFocus();
         ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+        if (ImGui::Button("取消", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
         ImGui::EndPopup();
     }
 

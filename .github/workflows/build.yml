@@ -1,0 +1,36 @@
+name: Build APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install tools (envsubst)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq gettext-base
+
+      - name: Ensure NDK is installed
+        run: |
+          if [ -z "$(ls -d "$ANDROID_SDK_ROOT"/ndk/* 2>/dev/null)" ]; then
+            echo "NDK not found, installing..."
+            yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+            yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" > /dev/null
+          fi
+          ls -d "$ANDROID_SDK_ROOT"/ndk/*
+
+      - name: Build (arm64-v8a + armeabi-v7a)
+        run: make BUILD_ANDROID=y ANDROID_ABIS="arm64-v8a armeabi-v7a" LABEL="声谱仪 Spectrogrammer"
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Spectrogrammer-zh
+          path: Spectrogrammer-*.apk
+          if-no-files-found: error
