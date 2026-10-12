@@ -109,7 +109,7 @@ extern "C" void android_main(struct android_app* app)
         const bool animate = g_Initialized && g_HasFocus && Spectrogrammer_ShouldAnimate();
         const int timeout = animate ? 0 : ((!g_AppInitialized && app->window) ? 100 : -1);
         int poll_timeout = timeout;
-        while (ALooper_pollAll(poll_timeout, nullptr, &out_events, (void**)&out_data) >= 0)
+        while (ALooper_pollOnce(poll_timeout, nullptr, &out_events, (void**)&out_data) >= 0)
         {
             poll_timeout = 0;
             // Process one event
