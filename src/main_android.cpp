@@ -17,6 +17,7 @@
 #include <GLES3/gl3.h>
 #include <string>
 #include <cstdio>
+#include <cstring>
 #include "Spectrogrammer.h"
 #include "audio/audio_main.h"
 
@@ -149,6 +150,47 @@ void Resume(struct android_app* app)
     keep_screen_on();
 }
 
+// 汉化: 校验字体文件是否为 stb_truetype 可解析的 TrueType 轮廓字体
+// (ImGui 内置的 stb_truetype 不支持 CFF/OTTO 轮廓; 部分 TTC (如小米的 NotoSansCJK)
+//  内部也是 CFF 子字体, 直接加载会在构建字体图集时断言崩溃)
+static bool IsValidTrueTypeFont(const char* path)
+{
+    FILE* f = fopen(path, "rb");
+    if (f == NULL)
+        return false;
+    unsigned char header[12] = {0};
+    if (fread(header, 1, 12, f) != 12) { fclose(f); return false; }
+    unsigned int magic = ((unsigned int)header[0] << 24) | ((unsigned int)header[1] << 16) | ((unsigned int)header[2] << 8) | header[3];
+    unsigned int base = 0;
+    if (magic == 0x74746366) // 'ttcf' 字体集合: 取第 0 个子字体偏移 (偏移表自 offset 12 起排列)
+    {
+        unsigned char buf[4];
+        if (fread(buf, 1, 4, f) != 4) { fclose(f); return false; }
+        base = ((unsigned int)buf[0] << 24) | ((unsigned int)buf[1] << 16) | ((unsigned int)buf[2] << 8) | buf[3];
+        if (fseek(f, base, SEEK_SET) != 0) { fclose(f); return false; }
+        if (fread(buf, 1, 4, f) != 4) { fclose(f); return false; }
+        magic = ((unsigned int)buf[0] << 24) | ((unsigned int)buf[1] << 16) | ((unsigned int)buf[2] << 8) | buf[3];
+    }
+    if (magic != 0x00010000 && magic != 0x74727565) // 仅接受 TrueType 轮廓 ('OTTO'/CFF 拒绝)
+    { fclose(f); return false; }
+    // 表目录: numTables @ base+4 (2字节BE), 表项 @ base+12 起, 每项16字节
+    // stb_truetype 必需 glyf/loca 表, 缺失即为不支持的轮廓格式
+    unsigned char hdr[8];
+    if (fseek(f, base + 4, SEEK_SET) != 0 || fread(hdr, 1, 8, f) != 8) { fclose(f); return false; }
+    unsigned int num_tables = ((unsigned int)hdr[0] << 8) | hdr[1];
+    if (num_tables == 0 || num_tables > 128) { fclose(f); return false; }
+    bool has_glyf = false, has_loca = false;
+    for (unsigned int i = 0; i < num_tables; i++)
+    {
+        unsigned char entry[16];
+        if (fread(entry, 1, 16, f) != 16) break;
+        if (memcmp(entry, "glyf", 4) == 0) has_glyf = true;
+        if (memcmp(entry, "loca", 4) == 0) has_loca = true;
+    }
+    fclose(f);
+    return has_glyf && has_loca;
+}
+
 void Init(struct android_app* app)
 {
     if (g_Initialized)
@@ -222,21 +264,21 @@ void Init(struct android_app* app)
 
     // 汉化: 尝试加载支持中文的系统字体，失败则回退到 ImGui 内置字体
     // (ImGui 默认字体只含 ASCII 字符，中文会显示为问号)
+    // 仅接受通过校验的 TrueType 轮廓字体，避免 stb_truetype 解析 CFF 字体时断言崩溃
     bool font_loaded = false;
     const char* cjk_font_paths[] =
     {
         "/system/fonts/DroidSansFallback.ttf",
         "/system/fonts/NotoSansCJK-Regular.ttc",
+        "/system/fonts/MiSansVF.ttf",
         "/system/fonts/NotoSerifCJK-Regular.ttc",
         "/system/fonts/NotoSansSC-Regular.otf",
     };
     const ImWchar* cjk_glyph_ranges = io.Fonts->GetGlyphRangesChineseSimplifiedCommon();
     for (const char* path : cjk_font_paths)
     {
-        FILE* f = fopen(path, "rb");
-        if (f == NULL)
+        if (!IsValidTrueTypeFont(path))
             continue;
-        fclose(f);
         if (io.Fonts->AddFontFromFileTTF(path, font_size, NULL, cjk_glyph_ranges) != NULL)
         {
             font_loaded = true;
