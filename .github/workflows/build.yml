@@ -26,7 +26,7 @@ jobs:
           ls -d "$ANDROID_SDK_ROOT"/ndk/*
 
       - name: Build (arm64-v8a + armeabi-v7a)
-        run: make BUILD_ANDROID=y ANDROID_ABIS="arm64-v8a armeabi-v7a" LABEL="声谱仪 Spectrogrammer"
+        run: make BUILD_ANDROID=y ANDROID_ABIS="arm64-v8a armeabi-v7a" LABEL=声谱仪
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
